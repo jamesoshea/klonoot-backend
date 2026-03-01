@@ -83,6 +83,18 @@ if [ \( -z "${DOMAIN}" \) -o \( ! -f $certfile \) ]; then
 				proxy_hide_header Location;
 				add_header  Location  /api$upstream_http_location;
 			}
+
+			# Proxy routing requests to brouter
+			location /routing/ {
+				proxy_pass http://brouter:17777/;
+				
+				# Rewrite Content-Location header
+				proxy_hide_header Content-Location;
+				add_header  Content-Location  /routing$upstream_http_content_location;
+				proxy_hide_header Location;
+				add_header  Location  /routing$upstream_http_location;
+			}
+
 			
 			# Serve static files or else the single page app
 			root /srv/www;
@@ -160,6 +172,17 @@ else
 				add_header  Content-Location  /api$upstream_http_content_location;
 				proxy_hide_header Location;
 				add_header  Location  /api$upstream_http_location;
+			}
+
+			# Proxy routing requests to brouter
+			location /routing/ {
+				proxy_pass http://brouter:17777/;
+				
+				# Rewrite Content-Location header
+				proxy_hide_header Content-Location;
+				add_header  Content-Location  /routing$upstream_http_content_location;
+				proxy_hide_header Location;
+				add_header  Location  /routing$upstream_http_location;
 			}
 			
 			# Serve static files or else the single page app

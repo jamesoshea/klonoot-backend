@@ -2,3 +2,4 @@ data/*
 log/*
 certificates/*
 acme-challenge/*
+.env

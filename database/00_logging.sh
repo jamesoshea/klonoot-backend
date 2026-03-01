@@ -1,4 +1,3 @@
-chown -R postgres /var/log
 chmod -R o+rwX /var/log
 echo "
 

@@ -5,7 +5,6 @@
 #
 # see https://docs.docker.com/compose/compose-file/
 #
-version: '2'
 services:
    web:
       image: nginx
@@ -37,15 +36,15 @@ services:
          PG_ENV_POSTGRES_DB:       'db'
          PG_PORT_5432_TCP_ADDR:    'dbm'
          PG_PORT_5432_TCP_PORT:    '5432'
-         POSTGREST_MAX_ROWS:       '1000000'
          POSTGREST_POOL:           '200'
    dbm:
-      image: postgres:9.5
+      image: postgres:17.9
       volumes:
          - ./log/dbm:/var/log:rw
          - ./database:/docker-entrypoint-initdb.d:ro
-         - ./data:/var/lib/postgresql/:rw
+         - ./data:/var/lib/postgresql:rw
       environment:
+
          POSTGRES_DB:              'db'
          POSTGRES_USER:            'postgres'
          POSTGRES_PASSWORD:        '${POSTGRES_PASSWORD}'

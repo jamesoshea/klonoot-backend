@@ -12,9 +12,8 @@ services:
          - ./www:/srv/www:ro
          - ./log/web:/var/log/nginx:rw
          - ./certificates:/etc/ssl/certs:ro
-         - ./empty:/var/empty:ro
          - ./acme-challenge:/srv/acme-challenge:ro
-         - ./nginx-init:/nginx-init:ro
+         - ./scripts/nginx-init:/nginx-init:ro
       links:
          - api
          - brouter

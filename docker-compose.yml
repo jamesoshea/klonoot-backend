@@ -45,7 +45,9 @@ services:
          - ./segments4:/segments4
 
    dbm:
-      image: postgres:17.9
+      build: ./database-extension
+      ports:
+         - 5432:5432
       volumes:
          - ./log/dbm:/var/log:rw
          - ./database:/docker-entrypoint-initdb.d:ro
@@ -55,6 +57,7 @@ services:
          POSTGRES_USER:            'postgres'
          POSTGRES_PASSWORD:        '${POSTGRES_PASSWORD}'
          AUTHENTICATOR_PASSWORD:   '${AUTHENTICATOR_PASSWORD}'
+         PASSWORD_SALT:            '${PASSWORD_SALT}'
 
    len:
       image: kvaps/letsencrypt-webroot

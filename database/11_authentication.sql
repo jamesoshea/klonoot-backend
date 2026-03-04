@@ -1,3 +1,6 @@
+CREATE DATABASE klonoot;
+
+\c klonoot
 BEGIN;
 --------------------------------------------------------------------------------
 -- We use JSON Web Tokens to authenticate API requests. PostgREST
@@ -36,7 +39,36 @@ CREATE TABLE hidden.users(
     "createdAt" timestamp NOT NULL DEFAULT now(),
     "updatedAt" timestamp NOT NULL DEFAULT now(),
     username text NOT NULL,
+    "password" text NOT NULL,
+    role text NOT NULL CHECK (length(ROLE) < 50),
     CONSTRAINT users_id_key UNIQUE (id)
 );
+CREATE FUNCTION hidden.encrypt_pass()
+    RETURNS TRIGGER
+    AS $$
+BEGIN
+    IF tg_op = 'INSERT' OR NEW.pass <> OLD.pass THEN
+        NEW.pass = crypt(NEW.pass, gen_salt(:'PASSWORD_SALT', 12))
+    END IF;
+    RETURN new
+END
+$$
+LANGUAGE plpgsql;
+CREATE TRIGGER encrypt_pass
+    BEFORE INSERT OR UPDATE ON hidden.users
+    FOR EACH ROW
+    EXECUTE PROCEDURE hidden.encrypt_pass() CREATE FUNCTION hidden.user_role(username text, password text)
+        RETURNS name
+        LANGUAGE plpgsql
+        AS $$
+BEGIN
+    RETURN(
+    SELECT
+        ROLE
+    FROM
+        hidden.users
+    WHERE
+        users.username = username AND users.password = crypt(user_role.password, users.password))
+END $$
 COMMIT;
 

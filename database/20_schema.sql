@@ -1,6 +1,7 @@
+\c klonoot
 BEGIN;
 --------------------------------------------------------------------------------
-CREATE TABLE routes(
+CREATE TABLE public.routes(
     id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
     "userId" uuid NOT NULL DEFAULT current_user_id() REFERENCES hidden.users(id),
     "createdAt" timestamp NOT NULL DEFAULT now(),
@@ -27,7 +28,7 @@ CREATE POLICY web_user_own_delete ON routes
     FOR DELETE
         USING ("userId" = current_user_id());
 --------------------------------------------------------------------------------
-CREATE TABLE pois(
+CREATE TABLE public.pois(
     id uuid NOT NULL DEFAULT gen_random_uuid(),
     "createdAt" timestamp with time zone NOT NULL DEFAULT now(),
     name character varying NOT NULL,

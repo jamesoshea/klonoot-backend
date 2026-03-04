@@ -22,6 +22,7 @@ services:
       environment:
          LE_RENEW_HOOK:            'docker kill -s HUP @CONTAINER_NAME@'
       command: /nginx-init
+
    api:
       image: begriffs/postgrest
       volumes:
@@ -37,10 +38,12 @@ services:
          PG_PORT_5432_TCP_ADDR:    'dbm'
          PG_PORT_5432_TCP_PORT:    '5432'
          POSTGREST_POOL:           '200'
+
    brouter:
       image: joeakeem/brouter:v1.7.8
       volumes:
          - ./segments4:/segments4
+
    dbm:
       image: postgres:17.9
       volumes:
@@ -48,11 +51,11 @@ services:
          - ./database:/docker-entrypoint-initdb.d:ro
          - ./data:/var/lib/postgresql:rw
       environment:
-
          POSTGRES_DB:              'db'
          POSTGRES_USER:            'postgres'
          POSTGRES_PASSWORD:        '${POSTGRES_PASSWORD}'
          AUTHENTICATOR_PASSWORD:   '${AUTHENTICATOR_PASSWORD}'
+
    len:
       image: kvaps/letsencrypt-webroot
       volumes:

@@ -2,85 +2,85 @@ BEGIN;
 
 --------------------------------------------------------------------------------
 
-CREATE TABLE posts (
-	id            bigserial   primary key,
-	author        text        not null
-	                          default current_user_id()
-	                          references hidden.users (id),
-	created       timestamp   not null
-	                          default now(),
-	title         text        not null,
-	contents      text        not null
+CREATE TABLE routes (
+	id          		uuid   	  			primary key
+											not null
+											default gen_random_uuid(),
+	"userId"      		uuid        		not null
+	            				        	default current_user_id()
+	                          				references hidden.users (id),
+	"createdAt"     	timestamp   		not null
+	                          				default now(),
+	"brouterProfile"    character varying   not null,
+	points 				jsonb 				null
+											default '[]'::jsonb,
+	name 				text 				not null
+											default ''::text,
+
+  	constraint 			routes_id_key 		unique (id),
+  	constraint 			routes_name_check 	check ((length(name) <= 100))
 );
 
--- Anonymous can read all.
-GRANT SELECT ON TABLE posts TO anonymous;
-
--- Author can insert and modify name and description…
+-- Author can insert and modify
 GRANT SELECT,
-	INSERT (title, contents),
-	UPDATE (title, contents),
+	INSERT,
+	UPDATE,
 	DELETE
-ON TABLE posts TO author;
-GRANT USAGE, SELECT ON SEQUENCE posts_id_seq TO author;
+ON TABLE routes TO web_user;
 
--- …but only of rows that he/she himself created.
-ALTER TABLE posts ENABLE ROW LEVEL SECURITY;
+-- …but only of rows that they created themselves.
+ALTER TABLE routes ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY select_unsecure ON posts FOR SELECT
-	USING (TRUE);
+CREATE POLICY web_user_own_select ON routes FOR SELECT
+	USING ("userId" = current_user_id());
 
-CREATE POLICY author_eigencreate ON posts FOR INSERT
-	WITH CHECK (author = current_user_id());
+CREATE POLICY web_user_own_create ON routes FOR INSERT
+	WITH CHECK ("userId" = current_user_id());
 
-CREATE POLICY author_eigenupdate ON posts FOR UPDATE
-	USING (author = current_user_id())
-	WITH CHECK (author = current_user_id());
+CREATE POLICY web_user_own_update ON routes FOR UPDATE
+	WITH CHECK ("userId" = current_user_id());
 
-CREATE POLICY author_eigendelete ON posts FOR DELETE
-	USING (author = current_user_id());
+CREATE POLICY web_user_own_delete ON routes FOR DELETE
+	USING ("userId" = current_user_id());
 
 --------------------------------------------------------------------------------
 
-CREATE TABLE comments (
-	id            bigserial   primary key,
-	post          bigint      not null
-	                          references posts (id)
-                             on delete cascade
-                             on update cascade,
-	author        text        not null
-	                          default current_user_id()
-	                          references hidden.users (id),
-	created       timestamp   not null
-	                          default now(),
-	contents      text        not null
+
+CREATE TABLE pois (
+  id 			uuid 						NOT NULL
+  											DEFAULT gen_random_uuid(),
+  "createdAt" 	timestamp with time zone	NOT NULL DEFAULT now(),
+  name 			character varying			NOT NULL,
+  "routeId" 	uuid 						NOT NULL
+											REFERENCES hidden.users (id),
+  coordinates 	json 						NOT NULL,
+  category 		character varying 			NOT NULL,
+  "userId" 		uuid 						NOT NULL
+	            				        	default current_user_id(),
+  CONSTRAINT 	pois_pkey 					PRIMARY KEY (id),
+  CONSTRAINT 	"pois_userId_fkey" 			FOREIGN KEY ("userId") REFERENCES hidden.users(id)
 );
 
--- Anonymous can read all.
-GRANT SELECT ON TABLE comments TO anonymous;
-
--- Author of comment can insert and modify…
+-- Author can insert and modify name and description…
 GRANT SELECT,
-	INSERT (post, contents),
-	UPDATE (contents),
+	INSERT,
+	UPDATE,
 	DELETE
-	ON TABLE comments TO author;
-GRANT USAGE, SELECT ON SEQUENCE comments_id_seq TO author;
+ON TABLE pois TO web_user;
 
--- …but only of comments that he/she himself created.
-ALTER TABLE comments ENABLE ROW LEVEL SECURITY;
+-- …but only of rows that they created themselves.
+ALTER TABLE pois ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY select_unsecure ON comments FOR SELECT
-	USING (TRUE);
+CREATE POLICY web_user_own_select ON pois FOR SELECT
+	USING ("userId" = current_user_id());
 
-CREATE POLICY author_eigencreate ON comments FOR INSERT
-	WITH CHECK (author = current_user_id());
+CREATE POLICY web_user_own_create ON pois FOR INSERT
+	WITH CHECK ("userId" = current_user_id());
 
-CREATE POLICY author_eigenupdate ON comments FOR UPDATE
-	USING (author = current_user_id())
-	WITH CHECK (author = current_user_id());
+CREATE POLICY web_user_own_update ON pois FOR UPDATE
+	WITH CHECK ("userId" = current_user_id());
 
-CREATE POLICY author_eigendelete ON comments FOR DELETE
-	USING (author = current_user_id());
+CREATE POLICY web_user_own_delete ON pois FOR DELETE
+	USING ("userId" = current_user_id());
 
 COMMIT;

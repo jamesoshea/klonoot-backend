@@ -4,3 +4,4 @@ certificates/*
 acme-challenge/*
 .env
 segments4/*
+.vscode/\

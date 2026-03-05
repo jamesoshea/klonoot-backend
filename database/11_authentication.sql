@@ -1,6 +1,10 @@
 CREATE DATABASE klonoot;
 
 \c klonoot
+CREATE EXTENSION pgcrypto;
+
+CREATE EXTENSION pgjwt;
+
 BEGIN;
 --------------------------------------------------------------------------------
 -- We use JSON Web Tokens to authenticate API requests. PostgREST
@@ -47,28 +51,55 @@ CREATE FUNCTION hidden.encrypt_pass()
     RETURNS TRIGGER
     AS $$
 BEGIN
-    IF tg_op = 'INSERT' OR NEW.pass <> OLD.pass THEN
-        NEW.pass = crypt(NEW.pass, gen_salt(:PASSWORD_SALT, 12))
+    IF tg_op = 'INSERT' OR NEW."password" <> OLD."password" THEN
+        NEW."password" = crypt(NEW."password", gen_salt('bf', 12));
     END IF;
-    RETURN new
-END
+    RETURN new;
+END;
 $$
 LANGUAGE plpgsql;
 CREATE TRIGGER encrypt_pass
     BEFORE INSERT OR UPDATE ON hidden.users
     FOR EACH ROW
-    EXECUTE PROCEDURE hidden.encrypt_pass() CREATE FUNCTION hidden.user_role(username text, password text)
-        RETURNS name
-        LANGUAGE plpgsql
-        AS $$
+    EXECUTE PROCEDURE hidden.encrypt_pass();
+CREATE FUNCTION hidden.user_role(username text, pass text)
+    RETURNS name
+    LANGUAGE plpgsql
+    AS $$
 BEGIN
     RETURN(
+        SELECT
+            ROLE
+        FROM
+            hidden.users
+        WHERE
+            users.username = user_role.username
+            AND users.password = crypt(user_role.pass, users.password));
+END;
+$$;
+CREATE FUNCTION public.login(username text, pass text, out token text)
+AS $$
+DECLARE
+    _role name;
+BEGIN
     SELECT
-        ROLE
-    FROM
-        hidden.users
-    WHERE
-        users.username = username AND users.password = crypt(user_role.password, users.password))
-END $$
+        hidden.user_role(username, pass) INTO _role;
+    IF _role IS NULL THEN
+        RAISE invalid_password
+        USING message = 'Invalid username or password';
+    END IF;
+        SELECT
+            sign(row_to_json(r), current_setting('app.settings.JWT_SECRET')) AS token
+        FROM (
+            SELECT
+                _role AS role,
+                login.username AS username,
+                extract(epoch FROM now())::integer + 60 * 60 AS exp) r INTO token;
+END;
+$$
+LANGUAGE plpgsql
+SECURITY DEFINER;
+GRANT usage ON SCHEMA hidden TO anonymous, web_user;
+GRANT EXECUTE ON FUNCTION public.login TO anonymous, web_user;
 COMMIT;
 

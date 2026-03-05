@@ -24,20 +24,19 @@ services:
       command: /nginx-init
 
    api:
-      image: begriffs/postgrest
+      image: postgrest/postgrest
       volumes:
          - ./log/api:/var/log:rw
       links:
          - dbm
       environment:
-         POSTGREST_JWT_SECRET:     '${JWT_SECRET}'
-         PG_ENV_POSTGRES_USER:     'authenticator'
-         POSTGREST_ANONYMOUS:      'anonymous'
-         PG_ENV_POSTGRES_PASSWORD: '${AUTHENTICATOR_PASSWORD}'
-         PG_ENV_POSTGRES_DB:       'db'
-         PG_PORT_5432_TCP_ADDR:    'dbm'
-         PG_PORT_5432_TCP_PORT:    '5432'
-         POSTGREST_POOL:           '200'
+         PGRST_APP_SETTINGS_JWT_SECRET:     '${JWT_SECRET}'
+         PGRST_DB_ANON_ROLE:     'authenticator'
+         PGRST_SERVER_HOST: 0.0.0.0 # necessary for `postgrest --ready` flag to work
+         PGRST_DB_URI: postgres://authenticator:${AUTHENTICATOR_PASSWORD}@dbm:5432/klonoot
+         PGRST_OPENAPI_SERVER_PROXY_URI: http://127.0.0.1:3000
+      depends_on:
+      - dbm
 
    brouter:
       image: joeakeem/brouter:v1.7.8

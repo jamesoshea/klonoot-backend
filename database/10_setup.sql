@@ -1,4 +1,0 @@
-CREATE EXTENSION pgcrypto;
-
-CREATE EXTENSION pgjwt;
-

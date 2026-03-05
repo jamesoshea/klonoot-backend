@@ -48,7 +48,7 @@ CREATE FUNCTION hidden.encrypt_pass()
     AS $$
 BEGIN
     IF tg_op = 'INSERT' OR NEW.pass <> OLD.pass THEN
-        NEW.pass = crypt(NEW.pass, gen_salt(:'PASSWORD_SALT', 12))
+        NEW.pass = crypt(NEW.pass, gen_salt(:PASSWORD_SALT, 12))
     END IF;
     RETURN new
 END

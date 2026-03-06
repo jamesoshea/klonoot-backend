@@ -18,14 +18,14 @@ CREATE ROLE web_user;
 GRANT anonymous, web_user TO authenticator;
 GRANT USAGE ON SCHEMA public TO anonymous, web_user;
 --------------------------------------------------------------------------------
--- The user id is a string stored in postgrest.claims.sub. Let's
+-- The user id is a string stored in postgrest.jwt.claims -- Let's
 -- wrap this in a nice function.
 CREATE FUNCTION current_user_id()
     RETURNS uuid STABLE
     LANGUAGE plpgsql
     AS $$
 BEGIN
-    RETURN current_setting('postgrest.claims.userid');
+    RETURN current_setting('request.jwt.claims', TRUE)::json ->> 'id';
 EXCEPTION
     -- handle unrecognized configuration parameter error
     WHEN undefined_object THEN
@@ -62,29 +62,29 @@ CREATE TRIGGER encrypt_pass
     BEFORE INSERT OR UPDATE ON hidden.users
     FOR EACH ROW
     EXECUTE PROCEDURE hidden.encrypt_pass();
-CREATE FUNCTION hidden.user_role(username text, pass text)
-    RETURNS name
+CREATE FUNCTION hidden.user_id(username text, pass text)
+    RETURNS uuid
     LANGUAGE plpgsql
     AS $$
 BEGIN
     RETURN(
         SELECT
-            ROLE
+            id
         FROM
             hidden.users
         WHERE
-            users.username = user_role.username
-            AND users.password = crypt(user_role.pass, users.password));
+            users.username = user_id.username
+            AND users.password = crypt(user_id.pass, users.password));
 END;
 $$;
 CREATE FUNCTION public.login(username text, pass text, out token text)
 AS $$
 DECLARE
-    _role name;
+    _id uuid;
 BEGIN
     SELECT
-        hidden.user_role(username, pass) INTO _role;
-    IF _role IS NULL THEN
+        hidden.user_id(username, pass) INTO _id;
+    IF _id IS NULL THEN
         RAISE invalid_password
         USING message = 'Invalid username or password';
     END IF;
@@ -92,7 +92,8 @@ BEGIN
             sign(row_to_json(r), current_setting('app.settings.JWT_SECRET')) AS token
         FROM (
             SELECT
-                _role AS role,
+                _id AS id,
+                'web_user' AS role,
                 login.username AS username,
                 extract(epoch FROM now())::integer + 60 * 60 AS exp) r INTO token;
 END;

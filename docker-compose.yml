@@ -2,73 +2,79 @@
 # static content. Nginx proxies API requests to the
 # server. The server is connected to a PostgreSQL
 # database.
-#
-# see https://docs.docker.com/compose/compose-file/
-#
+
 services:
    web:
       image: nginx
       volumes:
-         - ./www:/srv/www:ro
-         - ./log/web:/var/log/nginx:rw
-         - ./certificates:/etc/ssl/certs:ro
-         - ./acme-challenge:/srv/acme-challenge:ro
-         - ./scripts/nginx-init:/nginx-init:ro
+       - ./www:/srv/www:ro
+       - ./log/web:/var/log/nginx:rw
+       - ./certificates:/etc/ssl/certs:ro
+       - ./acme-challenge:/srv/acme-challenge:ro
+       - ./scripts/nginx-init:/nginx-init:ro
       links:
-         - api
-         - brouter
+       - api
+       - brouter
       ports:
-         - "8080:80"
+       - "8080:80"
       environment:
-         LE_RENEW_HOOK:            'docker kill -s HUP @CONTAINER_NAME@'
+         LE_RENEW_HOOK: 'docker kill -s HUP @CONTAINER_NAME@'
       command: /nginx-init
 
    api:
       image: postgrest/postgrest
       volumes:
-         - ./log/api:/var/log:rw
+       - ./log/api:/var/log:rw
       links:
-         - dbm
+       - dbm
       environment:
-         PGRST_APP_SETTINGS_JWT_SECRET:     '${JWT_SECRET}'
-         PGRST_DB_ANON_ROLE:     'authenticator'
+         PGRST_APP_SETTINGS_JWT_SECRET: '${JWT_SECRET}'
+         PGRST_JWT_SECRET: '${JWT_SECRET}'
+         PGRST_DB_ANON_ROLE: 'authenticator'
          PGRST_SERVER_HOST: 0.0.0.0 # necessary for `postgrest --ready` flag to work
          PGRST_DB_URI: postgres://authenticator:${AUTHENTICATOR_PASSWORD}@dbm:5432/klonoot
          PGRST_OPENAPI_SERVER_PROXY_URI: http://127.0.0.1:3000
       depends_on:
-      - dbm
+         dbm:
+            condition: service_healthy
 
    brouter:
       image: joeakeem/brouter:v1.7.8
       volumes:
-         - ./segments4:/segments4
+       - ./segments4:/segments4
 
    dbm:
       build: ./database
       ports:
-         - 5432:5432
+       - 5432:5432
       volumes:
-         - ./log/dbm:/var/log:rw
-         - ./database/init:/docker-entrypoint-initdb.d:ro
-         - ./data:/var/lib/postgresql:rw
+       - ./log/dbm:/var/log:rw
+       - ./database/init:/docker-entrypoint-initdb.d:ro
+       - ./data:/var/lib/postgresql:rw
       environment:
-         POSTGRES_DB:              'db'
-         POSTGRES_USER:            'postgres'
-         POSTGRES_PASSWORD:        '${POSTGRES_PASSWORD}'
-         AUTHENTICATOR_PASSWORD:   '${AUTHENTICATOR_PASSWORD}'
-         PASSWORD_SALT:            '${PASSWORD_SALT}'
+         POSTGRES_DB: 'db'
+         POSTGRES_USER: 'postgres'
+         POSTGRES_PASSWORD: '${POSTGRES_PASSWORD}'
+         AUTHENTICATOR_PASSWORD: '${AUTHENTICATOR_PASSWORD}'
+         PASSWORD_SALT: '${PASSWORD_SALT}'
+      healthcheck:
+         test: [ "CMD-SHELL", "pg_isready -U postgres -d db" ]
+         interval: 10s
+         retries: 5
+         start_period: 30s
+         timeout: 10s
 
    len:
       image: kvaps/letsencrypt-webroot
       volumes:
-         - ./log/len:/var/log:rw
-         - /etc/localtime:/etc/localtime:ro
-         - /var/run/docker.sock:/var/run/docker.sock:rw
-         - ./certificates:/etc/letsencrypt:rw
-         - ./acme-challenge:/tmp/acme-challenge:rw
+       - ./log/len:/var/log:rw
+       - /etc/localtime:/etc/localtime:ro
+       - /var/run/docker.sock:/var/run/docker.sock:rw
+       - ./certificates:/etc/letsencrypt:rw
+       - ./acme-challenge:/tmp/acme-challenge:rw
       links:
-         - web
+       - web
       environment:
-         WEBROOT_PATH:             '/tmp/acme-challenge'
-         EXP_LIMIT:                '30'
-         CHECK_FREQ:               '30'
+         WEBROOT_PATH: '/tmp/acme-challenge'
+         EXP_LIMIT: '30'
+         CHECK_FREQ: '30'

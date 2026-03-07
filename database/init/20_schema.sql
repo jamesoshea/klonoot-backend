@@ -8,10 +8,9 @@ CREATE TABLE public.routes(
     "brouterProfile" character varying NOT NULL,
     points jsonb NULL DEFAULT '[]'::jsonb,
     name text NOT NULL DEFAULT ''::text,
-    CONSTRAINT routes_id_key UNIQUE (id),
     CONSTRAINT routes_name_check CHECK ((length(name) <= 100))
 );
--- Author can insert and modify
+-- web_user can insert and modify
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE routes TO web_user;
 -- …but only of rows that they created themselves.
 ALTER TABLE routes ENABLE ROW LEVEL SECURITY;
@@ -32,14 +31,14 @@ CREATE TABLE public.pois(
     id uuid NOT NULL DEFAULT gen_random_uuid(),
     "createdAt" timestamp with time zone NOT NULL DEFAULT now(),
     name character varying NOT NULL,
-    "routeId" uuid NOT NULL REFERENCES hidden.users(id),
-    coordinates json NOT NULL,
+    "userId" uuid NOT NULL REFERENCES hidden.users(id),
+    coordinates jsonb NOT NULL,
     category character varying NOT NULL,
-    "userId" uuid NOT NULL DEFAULT current_user_id(),
-    CONSTRAINT pois_pkey PRIMARY KEY (id),
-    CONSTRAINT "pois_userId_fkey" FOREIGN KEY ("userId") REFERENCES hidden.users(id)
+    "routeId" uuid NOT NULL REFERENCES public.routes(id),
+    CONSTRAINT pois_name_check CHECK ((length(name) <= 100)),
+    CONSTRAINT category_name_check CHECK ((length(category) <= 100))
 );
--- Author can insert and modify name and description…
+-- web_user can insert and modify name and description…
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE pois TO web_user;
 -- …but only of rows that they created themselves.
 ALTER TABLE pois ENABLE ROW LEVEL SECURITY;

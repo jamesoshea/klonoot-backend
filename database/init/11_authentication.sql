@@ -42,7 +42,7 @@ CREATE TABLE hidden.users(
     id uuid NOT NULL DEFAULT gen_random_uuid(),
     "createdAt" timestamp NOT NULL DEFAULT now(),
     "updatedAt" timestamp NOT NULL DEFAULT now(),
-    username text NOT NULL,
+    username text UNIQUE NOT NULL,
     "password" text NOT NULL,
     role text NOT NULL CHECK (length(ROLE) < 50),
     CONSTRAINT users_id_key UNIQUE (id)
@@ -100,7 +100,23 @@ END;
 $$
 LANGUAGE plpgsql
 SECURITY DEFINER;
+CREATE FUNCTION public.signup(username text, pass text)
+    RETURNS uuid
+    AS $$
+DECLARE
+    "userId" uuid;
+BEGIN
+    INSERT INTO hidden.users("username", "password", "role")
+        VALUES (signup.username, signup.pass, 'web_user')
+    RETURNING
+        id INTO "userId";
+    RETURN "userId";
+END;
+$$
+LANGUAGE plpgsql
+SECURITY DEFINER;
 GRANT usage ON SCHEMA hidden TO anonymous, web_user;
 GRANT EXECUTE ON FUNCTION public.login TO anonymous, web_user;
+GRANT EXECUTE ON FUNCTION public.signup TO anonymous, web_user;
 COMMIT;
 

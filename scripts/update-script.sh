@@ -1,6 +1,6 @@
 #!/bin/bash
 
-wget https://brouter.de/brouter/segments4 -q -O - | ggrep -Po '(?<=")(\w+\d+_\w+\d+.rd5)' | sed 's/^/https:\/\/brouter.de\/brouter\/segments4\//' > linksfinal.txt
+wget https://brouter.de/brouter/segments4 -q -O - | grep -Po '(?<=")(\w+\d+_\w+\d+.rd5)' | sed 's/^/https:\/\/brouter.de\/brouter\/segments4\//' > linksfinal.txt
 mkdir tmp
 cd tmp
 wget -i ../linksfinal.txt

@@ -17,23 +17,20 @@ IFS='' read -r -d '' CSP <<-'EOD' || true
 	default-src
 		'none';
 	img-src
-		'self' ;
+		'self';
+		'klonoot.org';
 	style-src
 		'self'
-		cdnjs.cloudflare.com;
+		'klonoot.org';
 	font-src
 		'self'
-		cdn.auth0.com
-		cdnjs.cloudflare.com;
+		'klonoot.org';
 	script-src
 		'self'
-		example.auth0.com
-		cdn.auth0.com
-		code.jquery.com
-		cdnjs.cloudflare.com;
+		'klonoot.org';
 	connect-src
 		'self'
-		example.auth0.com;
+		'klonoot.org';
 EOD
 
 # Remove newlines

@@ -10,7 +10,9 @@ The routing engine is Brouter: https://brouter.de/brouter/index.html
 
 This is mainly an experiment to see how little code I can write, to get a simple, but functional backend for [Klonoot](https://klonoot.org). Having created a backend in Supabase, I wanted to learn more about Postgres' capabilities, and also have more knowledge and control over my own infrastructure, instead of relying on cloud services for everything.
 
-In the future, I may implement routing in postgres itself, using [PostGIS](https://postgis.net/) and [pgRouting](https://github.com/pgrouting). 
+It's also fun to revive useful old projects.
+
+In the future, I may implement routing in postgres itself, using [PostGIS](https://postgis.net/) and [pgRouting](https://github.com/pgrouting).
 
 ## Stack
 

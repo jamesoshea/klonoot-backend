@@ -42,7 +42,7 @@ CREATE TABLE hidden.users(
     id uuid NOT NULL DEFAULT gen_random_uuid(),
     "createdAt" timestamp NOT NULL DEFAULT now(),
     "updatedAt" timestamp NOT NULL DEFAULT now(),
-    username text UNIQUE NOT NULL,
+    username text UNIQUE NOT NULL CHECK (length(username) > 7),
     "password" text NOT NULL,
     role text NOT NULL CHECK (length(ROLE) < 50),
     CONSTRAINT users_id_key UNIQUE (id)
@@ -106,11 +106,16 @@ CREATE FUNCTION public.signup(username text, pass text)
 DECLARE
     "userId" uuid;
 BEGIN
-    INSERT INTO hidden.users("username", "password", "role")
-        VALUES (signup.username, signup.pass, 'web_user')
-    RETURNING
-        id INTO "userId";
-    RETURN "userId";
+    IF (length(signup.pass) < 8) THEN
+        RAISE invalid_password
+        USING message = 'Password must be at least 8 characters long';
+    END IF;
+
+        INSERT INTO hidden.users("username", "password", "role")
+            VALUES (signup.username, signup.pass, 'web_user')
+        RETURNING
+            id INTO "userId";
+        RETURN "userId";
 END;
 $$
 LANGUAGE plpgsql

@@ -27,7 +27,7 @@ In the future, I may implement routing in postgres itself, using [PostGIS](https
 
 Populate the `.env` file to match the `.env.example` file. Pick a high-entropy string for the `JWT_SECRET` (minimum 32 characters).
 
-Allow postgres read-write access to the `data` dir:
+Allow postgres read-write access to the `data` dir (only necessary on Linux, not macOS. No idea about Windows):
 
 `sudo setfacl -m u:$(id -u):rw -R ./data/`
 

@@ -77,3 +77,4 @@ services:
          WEBROOT_PATH: '/tmp/acme-challenge'
          EXP_LIMIT: '30'
          CHECK_FREQ: '30'
+         DOMAINS: 'beta.klonoot.org'

@@ -78,3 +78,4 @@ services:
          EXP_LIMIT: '30'
          CHECK_FREQ: '30'
          DOMAINS: 'beta.klonoot.org'
+         EMAIL: 'info@klonoot.org'

@@ -5,19 +5,20 @@
 
 services:
    web:
-      image: nginx
+      image: nginx:latest
       volumes:
+       - /etc/letsencrypt/live/beta.klonoot.org:/etc/letsencrypt/live/beta.klonoot.org:rw
        - ./www:/srv/www:ro
        - ./log/web:/var/log/nginx:rw
-       - ./certificates:/etc/ssl/certs:ro
-       - ./acme-challenge:/srv/acme-challenge:ro
        - ./scripts/nginx-init:/nginx-init:ro
       links:
        - api
        - brouter
       ports:
-       - "8080:80"
+       - "80:80"
+       - "443:443"
       environment:
+         DOMAIN: beta.klonoot.org
          LE_RENEW_HOOK: 'docker kill -s HUP @CONTAINER_NAME@'
       command: /nginx-init
 
@@ -62,20 +63,3 @@ services:
          retries: 5
          start_period: 30s
          timeout: 10s
-
-   len:
-      image: kvaps/letsencrypt-webroot
-      volumes:
-       - ./log/len:/var/log:rw
-       - /etc/localtime:/etc/localtime:ro
-       - /var/run/docker.sock:/var/run/docker.sock:rw
-       - ./certificates:/etc/letsencrypt:rw
-       - ./acme-challenge:/tmp/acme-challenge:rw
-      links:
-       - web
-      environment:
-         WEBROOT_PATH: '/tmp/acme-challenge'
-         EXP_LIMIT: '30'
-         CHECK_FREQ: '30'
-         DOMAINS: 'beta.klonoot.org'
-         EMAIL: 'info@klonoot.org'

@@ -42,7 +42,7 @@ CREATE TABLE hidden.users(
     id uuid NOT NULL DEFAULT gen_random_uuid(),
     "createdAt" timestamp NOT NULL DEFAULT now(),
     "updatedAt" timestamp NOT NULL DEFAULT now(),
-    username text UNIQUE NOT NULL CHECK (length(username) > 7),
+    email text UNIQUE NOT NULL CHECK (email ~* '^\S+@\S+\.\S+$'),
     "password" text NOT NULL,
     role text NOT NULL CHECK (length(ROLE) < 50),
     CONSTRAINT users_id_key UNIQUE (id)
@@ -62,7 +62,7 @@ CREATE TRIGGER encrypt_pass
     BEFORE INSERT OR UPDATE ON hidden.users
     FOR EACH ROW
     EXECUTE PROCEDURE hidden.encrypt_pass();
-CREATE FUNCTION hidden.user_id(username text, pass text)
+CREATE FUNCTION hidden.user_id(email text, pass text)
     RETURNS uuid
     LANGUAGE plpgsql
     AS $$
@@ -73,20 +73,20 @@ BEGIN
         FROM
             hidden.users
         WHERE
-            users.username = user_id.username
+            users.email = user_id.email
             AND users.password = crypt(user_id.pass, users.password));
 END;
 $$;
-CREATE FUNCTION public.login(username text, pass text, out token text)
+CREATE FUNCTION public.login(email text, pass text, out token text)
 AS $$
 DECLARE
     _id uuid;
 BEGIN
     SELECT
-        hidden.user_id(username, pass) INTO _id;
+        hidden.user_id(email, pass) INTO _id;
     IF _id IS NULL THEN
         RAISE invalid_password
-        USING message = 'Invalid username or password';
+        USING message = 'Invalid email or password';
     END IF;
         SELECT
             sign(row_to_json(r), current_setting('app.settings.JWT_SECRET')) AS token
@@ -94,13 +94,13 @@ BEGIN
             SELECT
                 _id AS id,
                 'web_user' AS role,
-                login.username AS username,
+                login.email AS email,
                 extract(epoch FROM now())::integer + 60 * 60 AS exp) r INTO token;
 END;
 $$
 LANGUAGE plpgsql
 SECURITY DEFINER;
-CREATE FUNCTION public.signup(username text, pass text)
+CREATE FUNCTION public.signup(email text, pass text)
     RETURNS uuid
     AS $$
 DECLARE
@@ -111,8 +111,8 @@ BEGIN
         USING message = 'Password must be at least 8 characters long';
     END IF;
 
-        INSERT INTO hidden.users("username", "password", "role")
-            VALUES (signup.username, signup.pass, 'web_user')
+        INSERT INTO hidden.users("email", "password", "role")
+            VALUES (signup.email, signup.pass, 'web_user')
         RETURNING
             id INTO "userId";
         RETURN "userId";

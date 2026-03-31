@@ -88,34 +88,41 @@ BEGIN
         RAISE invalid_password
         USING message = 'Invalid email or password';
     END IF;
+
+    SELECT
+        sign(row_to_json(r), current_setting('app.settings.JWT_SECRET')) AS token
+    FROM (
         SELECT
-            sign(row_to_json(r), current_setting('app.settings.JWT_SECRET')) AS token
-        FROM (
-            SELECT
-                _id AS id,
-                'web_user' AS role,
-                login.email AS email,
-                extract(epoch FROM now())::integer + 60 * 60 AS exp) r INTO token;
+            _id AS id,
+            'web_user' AS role,
+            login.email AS email,
+            extract(epoch FROM now())::integer + 60 * 60 AS exp) r INTO token;
 END;
 $$
 LANGUAGE plpgsql
 SECURITY DEFINER;
-CREATE FUNCTION public.signup(email text, pass text)
-    RETURNS uuid
-    AS $$
+CREATE FUNCTION public.signup(email text, pass text, out token text)
+AS $$
 DECLARE
-    "userId" uuid;
+    _id uuid;
 BEGIN
     IF (length(signup.pass) < 8) THEN
         RAISE invalid_password
         USING message = 'Password must be at least 8 characters long';
     END IF;
 
-        INSERT INTO hidden.users("email", "password", "role")
-            VALUES (signup.email, signup.pass, 'web_user')
-        RETURNING
-            id INTO "userId";
-        RETURN "userId";
+    INSERT INTO hidden.users("email", "password", "role")
+        VALUES (signup.email, signup.pass, 'web_user')
+    RETURNING id INTO _id;
+
+    SELECT
+        sign(row_to_json(r), current_setting('app.settings.JWT_SECRET')) as token
+    FROM (
+        SELECT
+            _id AS id,
+            'web_user' AS role,
+            signup.email AS email,
+            extract(epoch FROM now())::integer + 60 * 60 AS exp) r into token;
 END;
 $$
 LANGUAGE plpgsql

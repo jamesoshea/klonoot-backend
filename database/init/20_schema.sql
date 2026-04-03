@@ -3,7 +3,7 @@ BEGIN;
 --------------------------------------------------------------------------------
 CREATE TABLE public.routes(
     id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
-    "userId" uuid NOT NULL DEFAULT current_user_id() REFERENCES hidden.users(id),
+    "userId" uuid NOT NULL DEFAULT current_user_id() REFERENCES hidden.users(id) ON DELETE CASCADE,
     "createdAt" timestamp NOT NULL DEFAULT now(),
     "brouterProfile" character varying NOT NULL,
     points jsonb NULL DEFAULT '[]'::jsonb,
@@ -24,13 +24,14 @@ CREATE TABLE public.pois(
     id uuid NOT NULL DEFAULT gen_random_uuid(),
     "createdAt" timestamp with time zone NOT NULL DEFAULT now(),
     name character varying NOT NULL,
-    "userId" uuid NOT NULL REFERENCES hidden.users(id),
+    "userId" uuid NOT NULL DEFAULT current_user_id() REFERENCES hidden.users(id) ON DELETE CASCADE,
     coordinates jsonb NOT NULL,
     category character varying NOT NULL,
-    "routeId" uuid NOT NULL REFERENCES public.routes(id),
+    "routeId" uuid NOT NULL REFERENCES public.routes(id) ON DELETE CASCADE,
     CONSTRAINT pois_name_check CHECK ((length(name) <= 100)),
     CONSTRAINT category_name_check CHECK ((length(category) <= 100))
 );
+
 -- web_user can insert and modify name and description...
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE pois TO web_user;
 

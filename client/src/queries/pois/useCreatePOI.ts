@@ -2,7 +2,7 @@ import { useMutation } from "@tanstack/react-query";
 
 import { queryClient } from "../queryClient";
 
-import { MUTATION_KEYS, QUERY_KEYS } from "../../consts";
+import { MUTATION_KEYS, QUERY_KEYS, SERVER_URL } from "../../consts";
 import { useRouteContext } from "../../contexts/RouteContext";
 
 import axios from "../axios";
@@ -19,7 +19,7 @@ export const useCreatePOI = () => {
       coordinates: [lng: number, lat: number];
       name?: string;
     }) =>
-      axios.post("http://localhost/api/pois", {
+      axios.post(`${SERVER_URL}/api/pois`, {
         routeId: selectedRouteId,
         name: name ?? "",
         coordinates,

@@ -208,3 +208,5 @@ export enum ICON_BUTTON_SIZES {
 }
 
 export const DEFAULT_PACE = 20000; // metres per hour, used to query and display weather data
+
+export const SERVER_URL = import.meta.env.VITE_SERVER_URL;

@@ -1,7 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 
 import { queryClient } from "../queryClient";
-import { MUTATION_KEYS, QUERY_KEYS } from "../../consts";
+import { MUTATION_KEYS, QUERY_KEYS, SERVER_URL } from "../../consts";
 import { useRouteContext } from "../../contexts/RouteContext";
 import type { BROUTER_PROFILES, Coordinate } from "../../types";
 import axios from "../axios";
@@ -20,7 +20,7 @@ export const useCreateRoute = () => {
       name?: string;
       points: Coordinate[];
     }) =>
-      axios.post("http://localhost/api/routes", {
+      axios.post(`${SERVER_URL}/api/routes`, {
         brouterProfile,
         name: name ?? `New Route ${new Date().toLocaleDateString()}`,
         points,

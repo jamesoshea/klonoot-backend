@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { QUERY_KEYS } from "../../consts";
+import { QUERY_KEYS, SERVER_URL } from "../../consts";
 import { useRouteContext } from "../../contexts/RouteContext";
 import { useSessionContext } from "../../contexts/SessionContext";
 import type { RoutePOI } from "../../types";
@@ -15,7 +15,7 @@ export const useGetPOIs = () => {
     enabled: !!(user && selectedRouteId),
     queryKey: [QUERY_KEYS.GET_ROUTE_POIS],
     queryFn: async () => {
-      const { data } = await axios.get("http://localhost/api/pois");
+      const { data } = await axios.get(`${SERVER_URL}/api/pois`);
       return data;
     },
   });

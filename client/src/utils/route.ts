@@ -7,6 +7,7 @@ import type {
   RoutePOI,
 } from "../types";
 import axios from "axios";
+import { SERVER_URL } from "../consts";
 
 export const getTrackLength = (routeTrack: BrouterResponse) =>
   Number(routeTrack?.features[0]?.properties?.["track-length"] ?? 0);
@@ -96,9 +97,7 @@ export async function fetchRoute(
 
   const formattedQueryString = `lonlats=${formattedLngLats}&profile=${brouterProfile}&alternativeidx=0&format=${format}${formattedDirectPoints}&trackname=${routeName}&pois=${POIString ?? ""}`;
 
-  const baseUrl = import.meta.env.PROD ? "/routing" : "http://localhost/routing";
-
-  const resp = await axios.get(`${baseUrl}/brouter?${formattedQueryString}`);
+  const resp = await axios.get(`${SERVER_URL}/routing/brouter?${formattedQueryString}`);
 
   return resp.data;
 }

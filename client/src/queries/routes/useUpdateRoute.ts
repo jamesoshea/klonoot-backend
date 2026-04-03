@@ -1,7 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 
 import { queryClient } from "../queryClient";
-import { MUTATION_KEYS, QUERY_KEYS } from "../../consts";
+import { MUTATION_KEYS, QUERY_KEYS, SERVER_URL } from "../../consts";
 import type { BROUTER_PROFILES, Coordinate } from "../../types";
 import axios from "../axios";
 
@@ -22,7 +22,7 @@ export const useUpdateRoute = () => {
       }
 
       return axios.patch(
-        `http://localhost/api/routes?id=eq.${selectedRouteId}`,
+        `${SERVER_URL}/api/routes?id=eq.${selectedRouteId}`,
         {
           points,
           brouterProfile,

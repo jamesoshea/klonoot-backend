@@ -3,6 +3,7 @@ import { useState } from "react";
 
 import { faSignOut } from "@fortawesome/free-solid-svg-icons";
 
+import { SERVER_URL } from "../consts";
 import { useSessionContext } from "../contexts/SessionContext";
 import axios from "../queries/axios";
 import { queryClient } from "../queries/queryClient";
@@ -27,7 +28,7 @@ export const Auth = () => {
       const {
         data: { token },
       } = await axios.post(
-        "http://localhost/api/rpc/login",
+        `${SERVER_URL}/api/rpc/login`,
         { email, pass: password },
         { headers: { "Content-type": "application/json" } },
       );
@@ -50,7 +51,7 @@ export const Auth = () => {
       const {
         data: { token },
       } = await axios.post(
-        "http://localhost/api/rpc/signup",
+        `${SERVER_URL}/api/rpc/signup`,
         { email, pass: password },
         { headers: { "Content-type": "application/json" } },
       );

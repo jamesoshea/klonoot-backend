@@ -1,0 +1,73 @@
+import { useEffect, useState, type ReactNode } from "react";
+
+import { RouteContext, type ShowPOIContextType } from "./RouteContext";
+
+import { useFetchRoute } from "../queries/routes/useFetchRoute";
+import { useGetUserRoutes } from "../queries/routes/useGetUserRoutes";
+
+import { BROUTER_PROFILES, type Coordinate } from "../types";
+
+export const RouteContextProvider = ({ children }: { children: ReactNode }) => {
+  const { data: userRoutes } = useGetUserRoutes();
+
+  const [brouterProfile, setBrouterProfile] = useState<BROUTER_PROFILES>(BROUTER_PROFILES.TREKKING);
+  const [currentPointDistance, setCurrentPointDistance] = useState<number>(-1);
+  const [debouncedPoints, setDebouncedPoints] = useState<Coordinate[]>([]);
+  const [points, setPoints] = useState<Coordinate[]>([]);
+  const [selectedRouteId, setSelectedRouteId] = useState<string | null>(null);
+  const [showPOIs, setShowPOIs] = useState<ShowPOIContextType>({
+    bikeShops: false,
+    transit: false,
+    water: false,
+  });
+
+  const { data: routeTrack } = useFetchRoute({
+    enabled: points.length > 1,
+    brouterProfile,
+    points: debouncedPoints,
+  });
+
+  // debounce point changes
+  useEffect(() => {
+    // Set a timeout to update debounced value after 500ms
+    const handler = setTimeout(() => {
+      setDebouncedPoints(points);
+    }, 500);
+
+    // Cleanup the timeout if `query` changes before 500ms
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [points]);
+
+  useEffect(() => {
+    if (selectedRouteId || !userRoutes?.length) return;
+
+    setSelectedRouteId(userRoutes[0].id);
+  }, [userRoutes, selectedRouteId]);
+
+  const selectedUserRoute = userRoutes.find((userRoute) => userRoute.id === selectedRouteId);
+
+  return (
+    <RouteContext.Provider
+      value={{
+        brouterProfile,
+        setBrouterProfile,
+        currentPointDistance,
+        setCurrentPointDistance,
+        debouncedPoints,
+        points,
+        routeTrack: routeTrack ?? null,
+        setPoints,
+        selectedRouteId,
+        setSelectedRouteId,
+        selectedUserRoute,
+        showPOIs,
+        setShowPOIs,
+        userRoutes,
+      }}
+    >
+      {children}
+    </RouteContext.Provider>
+  );
+};

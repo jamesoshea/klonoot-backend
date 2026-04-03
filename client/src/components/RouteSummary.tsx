@@ -1,0 +1,159 @@
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faArrowsRotate,
+  faCloud,
+  faDroplet,
+  faLeftRight,
+  faMountain,
+  faTemperatureThreeQuarters,
+  faUmbrella,
+  faWind,
+  type IconDefinition,
+} from "@fortawesome/free-solid-svg-icons";
+
+import { ICON_BUTTON_SIZES } from "../consts";
+
+import { useRouteContext } from "../contexts/RouteContext";
+import { useLoadingContext } from "../contexts/LoadingContext";
+
+import { CHART_MODES, type BrouterResponse, type ChartMode, type Coordinate } from "../types";
+
+import { getTrackLength } from "../utils/route";
+
+import { RouteInfo } from "./RouteInfo";
+import { IconButton } from "./shared/IconButton";
+import { SquareButton } from "./shared/SquareButton";
+import { useState } from "react";
+
+const CHART_MODE_ICON_MAP: Record<ChartMode, IconDefinition> = {
+  cloudCover: faCloud,
+  elevation: faMountain,
+  precipMm: faDroplet,
+  precipPercentage: faUmbrella,
+  temp: faTemperatureThreeQuarters,
+  windSpeed: faWind,
+};
+
+const CHART_MODE_TOOLTIP_MAP: Record<ChartMode, string> = {
+  cloudCover: "Cloud cover",
+  elevation: "Elevation",
+  precipMm: "Precipitation (mm)",
+  precipPercentage: "Precipitation probability",
+  temp: "Temperature",
+  windSpeed: "Wind speed",
+};
+
+export const RouteSummary = ({
+  chartMode,
+  routeTrack,
+  onToggleMode,
+}: {
+  chartMode: ChartMode;
+  routeTrack: BrouterResponse;
+  onToggleMode: (mode: ChartMode) => void;
+}) => {
+  const { loading } = useLoadingContext();
+  const { points, setPoints } = useRouteContext();
+
+  const [showRouteInfo, setShowRouteInfo] = useState<boolean>(false);
+
+  const handleReverseRoute = () => {
+    const newPoints = [...points];
+    newPoints.reverse();
+    setPoints(newPoints);
+  };
+
+  const handleRouteBackToStart = () => {
+    const theFirstPointButMovedSlightly = [points[0][0], points[0][1]].map(
+      (coord) => coord + 0.0001,
+    );
+    setPoints([...points, theFirstPointButMovedSlightly as Coordinate]);
+  };
+
+  const handleRouteOutAndBack = () => {
+    const reversedPoints = [...points]
+      .reverse()
+      .slice(1)
+      .map(([lng, lat, name, direct]) => [lng + 0.0001, lat + 0.0001, name, direct]);
+    const newPoints = [...points, ...reversedPoints];
+    setPoints(newPoints as Coordinate[]);
+  };
+
+  const handleToggleMode = () => {
+    const currentModeIndex = CHART_MODES.findIndex((mode) => mode === chartMode);
+    onToggleMode(CHART_MODES[(currentModeIndex + 1) % 6]);
+  };
+
+  if (!points.length) {
+    return;
+  }
+
+  const trackLength = getTrackLength(routeTrack);
+  const elevationGain = Number(routeTrack?.features[0]?.properties?.["filtered ascend"] ?? 0);
+
+  return (
+    <>
+      <div className="flex items-center min-w-full">
+        <div
+          className="stats flex-grow tooltip cursor-pointer"
+          data-tip="Route info"
+          onClick={() => setShowRouteInfo(!showRouteInfo)}
+        >
+          <div className="stat text-center px-0.5 py-0">
+            <div className="stat-title">Distance</div>
+            <div className="">{(trackLength / 1000).toFixed(1)} km</div>
+          </div>
+
+          <div className="stat text-center px-0.5 py-0">
+            <div className="stat-title">Elevation</div>
+            <div className="">{elevationGain.toFixed(0)} m</div>
+          </div>
+        </div>
+        {!showRouteInfo && (
+          <div>
+            <div className="tooltip" data-tip="Route back to start">
+              <details className="dropdown">
+                <summary className="btn btn-circle w-8 h-8 btn-ghost text-neutral">
+                  <FontAwesomeIcon icon={faArrowsRotate} size="lg" />
+                </summary>
+                <ul className="menu dropdown-content bg-base-100 rounded-box z-12 w-52">
+                  <li>
+                    <SquareButton
+                      disabled={loading}
+                      text="Direct"
+                      onClick={handleRouteBackToStart}
+                    />
+                  </li>
+                  <li>
+                    <SquareButton
+                      disabled={loading}
+                      text="Out and back"
+                      onClick={handleRouteOutAndBack}
+                    />
+                  </li>
+                </ul>
+              </details>
+            </div>
+            <div className="tooltip" data-tip="Reverse route">
+              <IconButton
+                disabled={loading}
+                icon={faLeftRight}
+                size={ICON_BUTTON_SIZES.LARGE}
+                onClick={handleReverseRoute}
+              />
+            </div>
+            <div className="tooltip" data-tip={CHART_MODE_TOOLTIP_MAP[chartMode]}>
+              <IconButton
+                disabled={loading}
+                icon={CHART_MODE_ICON_MAP[chartMode]}
+                size={ICON_BUTTON_SIZES.LARGE}
+                onClick={handleToggleMode}
+              />
+            </div>
+          </div>
+        )}
+      </div>
+      {showRouteInfo && <RouteInfo routeTrack={routeTrack} />}
+    </>
+  );
+};

@@ -1,0 +1,7 @@
+create new table for stats
+- length
+- surface summary
+- elevation
+
+update it whenever brouter responds
+create custom dropdown

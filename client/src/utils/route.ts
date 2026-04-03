@@ -1,4 +1,6 @@
 import * as turf from "@turf/turf";
+import axios from "axios";
+
 import type {
   BROUTER_PROFILES,
   BrouterResponse,
@@ -6,7 +8,7 @@ import type {
   OverpassFeature,
   RoutePOI,
 } from "../types";
-import axios from "axios";
+
 import { SERVER_URL } from "../consts";
 
 export const getTrackLength = (routeTrack: BrouterResponse) =>

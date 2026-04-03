@@ -1,10 +1,14 @@
+import axios from "axios";
 import { beforeEach, describe, expect, it, test, vi } from "vitest";
 
 import { fetchRoute, setNewPoint } from "./route";
 import { BROUTER_PROFILES, type Coordinate } from "../types";
-import axios from "axios";
 
 const axiosGetSpy = vi.spyOn(axios, "get");
+
+vi.mock("../consts", () => ({
+  SERVER_URL: "",
+}));
 
 describe("setNewPoint", () => {
   test("should add point to middle", () => {

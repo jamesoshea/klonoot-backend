@@ -1,6 +1,12 @@
-import { describe, expect, test } from "vitest";
-import { getMinMaxWeatherValue } from "./weather";
+import { describe, expect, test, vi } from "vitest";
+
 import type { WeatherData } from "../types";
+
+import { getMinMaxWeatherValue } from "./weather";
+
+vi.mock("../consts", () => ({
+  SERVER_URL: "",
+}));
 
 const MOCK_WEATHER_DATA = [
   { values: { temp: 3.2, windSpeed: 19 }, formatted: { temp: "3.2°C", windSpeed: "19 km/h" } },

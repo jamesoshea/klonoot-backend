@@ -22,7 +22,7 @@ export default defineConfig({
         test: {
           include: ["**/*.test.ts"],
           name: "unit",
-          environment: "node",
+          environment: "jsdom",
         },
       },
     ],

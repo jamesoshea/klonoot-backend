@@ -1,10 +1,15 @@
 data/*
-log/*
 certificates/*
 acme-challenge/*
 .env
-segments4/*
+
 .vscode/\
 
 client/node_modules
 client/dist
+
+segments4/*.rd5
+
+log/dbm/*
+log/len/*
+log/nginx/*

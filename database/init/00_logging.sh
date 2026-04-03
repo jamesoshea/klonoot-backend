@@ -5,14 +5,13 @@ echo "
 # LOG LOCATION
 
 log_destination = stderr
-logging_collector = true
+logging_collector = on
 log_directory = '/var/log/'
 
 # ERROR REPORTING AND LOGGING
 
 log_statement = all
 log_min_duration_statement = 0
-log_line_prefix = '%t [%p]: [%l-1] user=%u,db=%d,app=%a,client=%h '
 log_checkpoints = on
 log_connections = on
 log_disconnections = on

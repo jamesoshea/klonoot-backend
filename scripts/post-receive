@@ -34,7 +34,7 @@ $dc create
 $dc start
 
 # Reload nginx
-$dc kill -s SIGHUP web
+$dc kill -s SIGHUP nginx
 
 # Reset permissions
 sudo chown -R :adm /srv/live

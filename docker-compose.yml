@@ -13,12 +13,12 @@ services:
     environment:
       - VITE_SERVER_URL=${SERVER_URL}
 
-  web:
+  nginx:
     image: nginx:latest
     volumes:
       - /etc/letsencrypt/live/beta.klonoot.org:/etc/letsencrypt/live/beta.klonoot.org:rw
       - ./www:/srv/www:ro
-      - ./log/web:/var/log/nginx:rw
+      - ./log/nginx:/var/log/nginx:rw
       - ./scripts/nginx-init:/nginx-init:ro
     links:
       - api

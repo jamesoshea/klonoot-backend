@@ -164,14 +164,6 @@ else
 				proxy_hide_header Location;
 				add_header  Location  /routing$upstream_http_location;
 			}
-			
-			# Serve static files or else the single page app
-			root /srv/www;
-			index index.html;
-			location / {
-				try_files $uri /index.html =404;
-			}
-			
 			error_page 404 /not-found;
 		}
 		

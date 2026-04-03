@@ -7,3 +7,4 @@ segments4/*
 .vscode/\
 
 client/node_modules
+client/dist

@@ -16,6 +16,12 @@ const addAuthHeader = (config: InternalAxiosRequestConfig) => {
 
 const handleError = (error: AxiosError) => {
   console.error(error.message);
+
+  if (error.response?.status === 401) {
+    window.localStorage.removeItem("token");
+    window.localStorage.removeItem("user");
+  }
+
   return Promise.reject(error);
 };
 

@@ -106,7 +106,7 @@ export const UserRouteList = ({ points }: { points: Coordinate[] }) => {
     setNewRouteName(selectedUserRoute?.name ?? "");
   }, [selectedUserRoute]);
 
-  return (
+  return userRoutes.length ? (
     <>
       <div className="p-2 rounded-lg bg-base-100">
         <div className="text-xs opacity-60 pb-1 pl-0.5">
@@ -210,5 +210,5 @@ export const UserRouteList = ({ points }: { points: Coordinate[] }) => {
         </div>
       </dialog>
     </>
-  );
+  ) : null;
 };

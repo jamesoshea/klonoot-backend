@@ -6,7 +6,7 @@ import { useLoadingContext } from "../contexts/LoadingContext";
 
 export const Avatar = ({ onClick }: { onClick: () => void }) => {
   const { loading } = useLoadingContext();
-  const { session } = useSessionContext();
+  const { user } = useSessionContext();
 
   return (
     <div className="flex flex-row-reverse items-center justify-start gap-2 w-full">
@@ -15,7 +15,7 @@ export const Avatar = ({ onClick }: { onClick: () => void }) => {
       ) : (
         <div
           className="tooltip tooltip-left"
-          data-tip={session ? `Signed in as ${session.user.email}` : "Not signed in"}
+          data-tip={user ? `Signed in as ${user.email}` : "Not signed in"}
         >
           <FontAwesomeIcon
             className="cursor-pointer text-neutral"

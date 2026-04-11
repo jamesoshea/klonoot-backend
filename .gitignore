@@ -1,3 +1,5 @@
+**/.DS_Store
+
 data/*
 certificates/*
 acme-challenge/*
@@ -8,7 +10,7 @@ acme-challenge/*
 client/node_modules
 client/dist
 
-segments4/*.rd5
+brouter/segments4/*.rd5
 
 log/dbm/*
 log/len/*

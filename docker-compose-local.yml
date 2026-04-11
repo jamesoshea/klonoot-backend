@@ -19,7 +19,7 @@ services:
       - /etc/letsencrypt/live/beta.klonoot.org:/etc/letsencrypt/live/beta.klonoot.org:rw
       - ./www:/srv/www:ro
       - ./log/nginx:/var/log/nginx:rw
-      - ./scripts/nginx-init:/nginx-init:ro
+      - ./nginx/init:/nginx-init:ro
     links:
       - api
       - brouter

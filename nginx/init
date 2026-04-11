@@ -53,6 +53,7 @@ EOD
 # Check if we have certificates, if not, skip the TLS
 certfile="/etc/letsencrypt/live/${DOMAIN}/privkey.pem"
 ls -l "/etc/letsencrypt/live/$DOMAIN/"
+
 if [ \( -z "${DOMAIN}" \) -o \( ! -f $certfile \) ]; then
 	
 	echo "WARNING: No certificate found. Starting with no TLS configuration"

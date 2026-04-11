@@ -1,0 +1,77 @@
+# Sets up infrastructure where Nginx handles TLS and
+# static content. Nginx proxies API requests to the
+# server. The server is connected to a PostgreSQL
+# database.
+
+services:
+  client:
+    build: ./client
+    volumes:
+      - ./client/src:/client/src
+    ports:
+      - 5173:5173
+    environment:
+      - VITE_SERVER_URL=${SERVER_URL}
+
+  nginx:
+    image: nginx:latest
+    volumes:
+      - /etc/letsencrypt/live/beta.klonoot.org:/etc/letsencrypt/live/beta.klonoot.org:rw
+      - ./www:/srv/www:ro
+      - ./log/nginx:/var/log/nginx:rw
+      - ./nginx/init:/nginx-init:ro
+    links:
+      - api
+      - brouter
+    ports:
+      - 80:80
+      - 443:443
+    environment:
+      DOMAIN: beta.klonoot.org
+      LE_RENEW_HOOK: "docker kill -s HUP @CONTAINER_NAME@"
+    command: /nginx-init
+
+  api:
+    image: postgrest/postgrest
+    links:
+      - dbm
+    environment:
+      PGRST_APP_SETTINGS_JWT_SECRET: "${JWT_SECRET}"
+      PGRST_JWT_SECRET: "${JWT_SECRET}"
+      PGRST_DB_ANON_ROLE: "authenticator"
+      PGRST_SERVER_HOST: 0.0.0.0 # necessary for `postgrest --ready` flag to work
+      PGRST_DB_URI: postgres://authenticator:${AUTHENTICATOR_PASSWORD}@dbm:5432/klonoot
+      PGRST_OPENAPI_SERVER_PROXY_URI: http://127.0.0.1:3000
+      PGRST_LOG_LEVEL: info
+    depends_on:
+      dbm:
+        condition: service_healthy
+
+  brouter:
+    build: ./brouter
+    environment:
+      SEGMENTSPATH: "/brouter/segments4"
+      CUSTOMPROFILESPATH: "/brouter/custom-profiles"
+    volumes:
+      - ./brouter/segments4:/brouter/segments4
+      - ./brouter/custom-profiles:/brouter/custom-profiles
+
+  dbm:
+    build: ./database
+    ports:
+      - 5432:5432
+    volumes:
+      - ./log/dbm:/var/log:rw
+      - ./database/init:/docker-entrypoint-initdb.d:ro
+      - ./data:/var/lib/postgresql:rw
+    environment:
+      POSTGRES_DB: "db"
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+      AUTHENTICATOR_PASSWORD: "${AUTHENTICATOR_PASSWORD}"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d db"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s

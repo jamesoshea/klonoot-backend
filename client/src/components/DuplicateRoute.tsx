@@ -10,6 +10,8 @@ export const DuplicateRoute = () => {
   const { mutateAsync: createUserRoute } = useCreateRoute();
 
   const handleCreateRoute = () => {
+    if (!selectedUserRoute) return
+
     createUserRoute({
       brouterProfile: selectedUserRoute.brouterProfile,
       name: `Copy of ${selectedUserRoute.name}`,

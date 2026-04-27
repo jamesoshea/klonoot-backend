@@ -53,10 +53,6 @@ services:
     build: ./brouter
     environment:
       SEGMENTSPATH: "/brouter/segments4"
-      CUSTOMPROFILESPATH: "/brouter/custom-profiles"
-    volumes:
-      - ./brouter/segments4:/brouter/segments4
-      - ./brouter/custom-profiles:/brouter/custom-profiles
 
   dbm:
     build: ./database

@@ -10,4 +10,4 @@ COPY update-script.sh .
 RUN chmod a+x ./update-script.sh
 
 
-CMD /bin/server.sh
+CMD ./update-script.sh;/bin/server.sh

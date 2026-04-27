@@ -50,9 +50,16 @@ services:
         condition: service_healthy
 
   brouter:
-    build: ./brouter
-    environment:
-      SEGMENTSPATH: "/brouter/segments4"
+    build:
+      context: brouter
+      args:
+        VERSION: 1.7.9
+    ports:
+        - "17777:17777"
+    volumes:
+        - ./brouter/data/profiles:/data/profiles
+        - ./brouter/data/segments:/data/segments
+        - ./brouter/data/customprofiles:/data/customprofiles
 
   dbm:
     build: ./database

@@ -1,7 +1,6 @@
 import axios, { AxiosError, type InternalAxiosRequestConfig } from "axios";
 
 const axiosInstance = axios.create({
-  baseURL: "/api/",
   headers: { "Content-Type": "application/json" },
 });
 

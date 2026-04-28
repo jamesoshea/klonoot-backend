@@ -18,7 +18,8 @@ services:
   nginx:
     image: nginx:latest
     volumes:
-      - /etc/letsencrypt/live/${DOMAIN}:/etc/letsencrypt/live/${DOMAIN}:rw
+      - /etc/letsencrypt/archive/${DOMAIN}:/etc/letsencrypt/archive/${DOMAIN}:ro
+      - /etc/letsencrypt/live/${DOMAIN}:/etc/letsencrypt/live/${DOMAIN}:ro
       - client-dist:/srv/www
       - ./log/nginx:/var/log/nginx:rw
       - ./nginx/init:/nginx-init:ro

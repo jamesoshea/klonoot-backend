@@ -19,18 +19,28 @@ IFS='' read -r -d '' CSP <<-'EOD' || true
 	img-src
 		'self';
 		'klonoot.org';
+		'beta.klonoot.org';
+		'api.mapbox.com';
 	style-src
 		'self'
 		'klonoot.org';
+		'beta.klonoot.org';
+		'api.mapbox.com';
 	font-src
 		'self'
 		'klonoot.org';
+		'beta.klonoot.org';
+		'api.mapbox.com';
 	script-src
 		'self'
 		'klonoot.org';
+		'beta.klonoot.org';
+		'api.mapbox.com';
 	connect-src
 		'self'
 		'klonoot.org';
+		'beta.klonoot.org';
+		'api.mapbox.com';
 EOD
 
 # Remove newlines
@@ -49,10 +59,10 @@ cat > /etc/nginx/conf.d/default.conf <<-'EOD'
 	
 EOD
 
+
 # Check if we have $DOMAIN, if not, skip the TLS
 # Check if we have certificates, if not, skip the TLS
 certfile="/etc/letsencrypt/live/${DOMAIN}/privkey.pem"
-ls -l "/etc/letsencrypt/live/$DOMAIN/"
 
 if [ \( -z "${DOMAIN}" \) -o \( ! -f $certfile \) ]; then
 	
@@ -165,13 +175,22 @@ else
 				proxy_hide_header Location;
 				add_header  Location  /routing$upstream_http_location;
 			}
+
+			# Serve static files or else the single page app
+			root /srv/www;
+			index index.html;
+
+			location / {
+				try_files $uri /index.html =404;
+			}
+			
 			error_page 404 /not-found;
 		}
 		
 	EOD
 	
 	sed -i "s|DOMAINNAME|${DOMAIN}|g" /etc/nginx/conf.d/default.conf
-	sed -i "s|CONTENTSECURITYPOLICY|${CSP}|g" /etc/nginx/conf.d/default.conf
+	# sed -i "s|CONTENTSECURITYPOLICY|${CSP}|g" /etc/nginx/conf.d/default.conf
 	
 fi
 
